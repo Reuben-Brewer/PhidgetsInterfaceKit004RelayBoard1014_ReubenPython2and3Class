@@ -40,6 +40,7 @@ Raspberry Pi Buster
 https://pypi.org/project/Phidget22/#files
 
 To install the Python module using pip:
+
 pip install Phidget22       (with "sudo" if on Linux/Raspberry Pi)
 
 To install the Python module from the downloaded .tar.gz file, enter downloaded folder and type "python setup.py install"
@@ -63,6 +64,7 @@ https://www.phidgets.com/docs/OS_-_Linux#Quick_Downloads
 https://www.phidgets.com/education/learn/getting-started-kit-tutorial/install-libraries/
 
 curl -fsSL https://www.phidgets.com/downloads/setup_linux | sudo -E bash -
+
 sudo apt-get install -y libphidget22
  
 ###########################
