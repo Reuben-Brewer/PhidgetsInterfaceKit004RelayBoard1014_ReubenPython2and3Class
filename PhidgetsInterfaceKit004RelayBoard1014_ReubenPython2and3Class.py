@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision C, 11/12/2021
+Software Revision D, 03/13/2022
 
 Verified working on: Python 2.7, 3.8 for Windows 8.1, 10 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -46,6 +46,14 @@ else:
     from future.builtins import input as input
 ############### #"sudo pip3 install future" (Python 3) AND "sudo pip install future" (Python 2)
 
+###############
+import platform
+if platform.system() == "Windows":
+    import ctypes
+    winmm = ctypes.WinDLL('winmm')
+    winmm.timeBeginPeriod(1) #Set minimum timer resolution to 1ms so that time.sleep(0.001) behaves properly.
+###############
+
 ###########################################################
 ###########################################################
 #To install Phidget22, enter folder "Phidget22Python_1.0.0.20190107\Phidget22Python" and type "python setup.py install"
@@ -70,6 +78,21 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         self.EnableInternal_MyPrint_Flag = 0
         self.MainThread_still_running_flag = 0
 
+        #########################################################
+        self.CurrentTime_CalculatedFromMainThread = -11111.0
+        self.StartingTime_CalculatedFromMainThread = -11111.0
+        self.LastTime_CalculatedFromMainThread = -11111.0
+        self.DataStreamingFrequency_CalculatedFromMainThread = -11111.0
+        self.DataStreamingDeltaT_CalculatedFromMainThread = -11111.0
+        #########################################################
+
+        #########################################################
+        self.DetectedDeviceName = "default"
+        self.DetectedDeviceID = "default"
+        self.DetectedDeviceVersion = "default"
+        self.DetectedDeviceSerialNumber = "default"
+        #########################################################
+
         self.DigitalOutputsList_PhidgetsDigitalOutputObjects = list()
 
         self.NumberOfDigitalOutputs = 4
@@ -81,7 +104,9 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         self.DigitalOutputsList_State_NeedsToBeChangedFlag = [1] * self.NumberOfDigitalOutputs
         self.DigitalOutputsList_State_ToBeSet = [0] * self.NumberOfDigitalOutputs
 
-        self.MostRecentDataDict = dict()
+        self.MostRecentDataDict = dict([("DigitalOutputsList_State", self.DigitalOutputsList_State),
+                                        ("DigitalOutputsList_ErrorCallbackFiredFlag", self.DigitalOutputsList_ErrorCallbackFiredFlag),
+                                        ("Time", self.CurrentTime_CalculatedFromMainThread)])
 
         ##########################################
         ##########################################
@@ -229,6 +254,15 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
             print("GUI_COLUMNSPAN = " + str(self.GUI_COLUMNSPAN))
             ##########################################
 
+            ##########################################
+            if "GUI_STICKY" in self.GUIparametersDict:
+                self.GUI_STICKY = str(self.GUIparametersDict["GUI_STICKY"])
+            else:
+                self.GUI_STICKY = "w"
+
+            print("GUI_STICKY = " + str(self.GUI_STICKY))
+            ##########################################
+
         else:
             self.GUIparametersDict = dict()
             self.USE_GUI_FLAG = 0
@@ -292,19 +326,6 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         self.PrintToGui_Label_TextInputHistory_List = [" "]*self.NumberOfPrintLines
         self.PrintToGui_Label_TextInput_Str = ""
         self.GUI_ready_to_be_updated_flag = 0
-        #########################################################
-
-        #########################################################
-        self.CurrentTime_CalculatedFromMainThread = -11111.0
-        self.LastTime_CalculatedFromMainThread = -11111.0
-        self.StartingTime_CalculatedFromMainThread = -11111.0
-        self.DataStreamingFrequency_CalculatedFromMainThread = -11111.0
-        self.DataStreamingDeltaT_CalculatedFromMainThread = -11111.0
-
-        self.DetectedDeviceName = "default"
-        self.DetectedDeviceID = "default"
-        self.DetectedDeviceVersion = "default"
-        self.DetectedDeviceSerialNumber = "default"
         #########################################################
 
         #########################################################
@@ -857,7 +878,8 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                           padx = self.GUI_PADX,
                           pady = self.GUI_PADY,
                           rowspan = self.GUI_ROWSPAN,
-                          columnspan= self.GUI_COLUMNSPAN)
+                          columnspan= self.GUI_COLUMNSPAN,
+                          sticky = self.GUI_STICKY)
         ###################################################
 
         ###################################################

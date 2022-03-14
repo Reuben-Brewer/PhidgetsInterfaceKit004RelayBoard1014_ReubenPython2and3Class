@@ -6,7 +6,7 @@ reuben.brewer@gmail.com,
 www.reubotics.com
 
 Apache 2 License
-Software Revision C, 11/12/2021
+Software Revision D, 03/13/2022
 
 Verified working on: Python 2.7, 3.8 for Windows 8.1, 10 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -37,6 +37,14 @@ if sys.version_info[0] < 3:
     from builtins import raw_input as input
 else:
     from future.builtins import input as input #"sudo pip3 install future" (Python 3) AND "sudo pip install future" (Python 2)
+###############
+
+###############
+import platform
+if platform.system() == "Windows":
+    import ctypes
+    winmm = ctypes.WinDLL('winmm')
+    winmm.timeBeginPeriod(1) #Set minimum timer resolution to 1ms so that time.sleep(0.001) behaves properly.
 ###############
 
 ###########################################################################################################
@@ -102,30 +110,11 @@ def GUI_update_clock():
 ##########################################################################################################
 ##########################################################################################################
 def ExitProgram_Callback():
-    global root
     global EXIT_PROGRAM_FLAG
-    global GUI_RootAfterCallbackInterval_Milliseconds
 
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject
-    global RELAYS_OPEN_FLAG
-
-    global MyPrint_ReubenPython2and3ClassObject
-    global MYPRINT_OPEN_FLAG
-
-    print("Exiting all threads in test_program_for_MyPrint_ReubenPython2and3Class.")
+    print("ExitProgram_Callback event fired!")
 
     EXIT_PROGRAM_FLAG = 1
-
-    #########################################################
-    if RELAYS_OPEN_FLAG == 1:
-        PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.ExitProgram_Callback()
-    #########################################################
-
-    #########################################################
-    if MYPRINT_OPEN_FLAG == 1:
-        MyPrint_ReubenPython2and3ClassObject.ExitProgram_Callback()
-    #########################################################
-
 ##########################################################################################################
 ##########################################################################################################
 
@@ -251,21 +240,6 @@ if __name__ == '__main__':
     global EXIT_PROGRAM_FLAG
     EXIT_PROGRAM_FLAG = 0
 
-    global root
-
-    global GUI_RootAfterCallbackInterval_Milliseconds
-    GUI_RootAfterCallbackInterval_Milliseconds = 30
-
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject
-
-    global RELAYS_OPEN_FLAG
-    RELAYS_OPEN_FLAG = -1
-
-    global MyPrint_ReubenPython2and3ClassObject
-
-    global MYPRINT_OPEN_FLAG
-    MYPRINT_OPEN_FLAG = -1
-
     global CurrentTime_MainLoopThread
     CurrentTime_MainLoopThread = -11111.0
 
@@ -283,6 +257,40 @@ if __name__ == '__main__':
 
     global CycleThroughRelayStatesForTesting_RelayStateToBeSet
     CycleThroughRelayStatesForTesting_RelayStateToBeSet = 1
+
+    global root
+
+    global GUI_RootAfterCallbackInterval_Milliseconds
+    GUI_RootAfterCallbackInterval_Milliseconds = 30
+    #################################################
+    #################################################
+
+    #################################################
+    #################################################
+    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject
+
+    global RELAYS_OPEN_FLAG
+    RELAYS_OPEN_FLAG = -1
+
+    global RELAYS_MostRecentDict
+
+    global RELAYS_MostRecentDict_DigitalOutputsList_State
+    RELAYS_MostRecentDict_DigitalOutputsList_State = [-1]*4
+
+    global RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag
+    RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = [-1]*4
+
+    global RELAYS_MostRecentDict_Time
+    RELAYS_MostRecentDict_Time = -11111.0
+    #################################################
+    #################################################
+
+    #################################################
+    #################################################
+    global MyPrint_ReubenPython2and3ClassObject
+
+    global MYPRINT_OPEN_FLAG
+    MYPRINT_OPEN_FLAG = -1
     #################################################
     #################################################
 
@@ -301,17 +309,6 @@ if __name__ == '__main__':
 
     #################################################
     #################################################
-    global RELAYS_MostRecentDict
-
-    global RELAYS_MostRecentDict_DigitalOutputsList_State
-    RELAYS_MostRecentDict_DigitalOutputsList_State = [-1]*4
-
-    global RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag
-    RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = [-1]*4
-
-    global RELAYS_MostRecentDict_Time
-    RELAYS_MostRecentDict_Time = -11111.0
-
     global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict
     PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict = dict([("USE_GUI_FLAG", USE_GUI_FLAG and SHOW_IN_GUI_RELAYS_FLAG),
                                     ("root", root),
@@ -327,7 +324,7 @@ if __name__ == '__main__':
 
     global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_setup_dict
     PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_setup_dict = dict([("GUIparametersDict", PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict),
-                                                                                ("DesiredSerialNumber", 522104), #CHANGE THIS FOR YOUR UNIQUE BOARD
+                                                                                ("DesiredSerialNumber", 575015), #CHANGE THIS FOR YOUR UNIQUE BOARD
                                                                                 ("WaitForAttached_TimeoutDuration_Milliseconds", 5000),
                                                                                 ("NameToDisplay_UserSet", "Reuben's Test Relay 004 Controller"),
                                                                                 ("UsePhidgetsLoggingInternalToThisClassObjectFlag", 1),
@@ -445,7 +442,22 @@ if __name__ == '__main__':
     #################################################
     #################################################
 
-
+    ################################################# THIS IS THE EXIT ROUTINE!
+    #################################################
     print("Exiting main program 'test_program_for_PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class.")
+
+    #################################################
+    if RELAYS_OPEN_FLAG == 1:
+        PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.ExitProgram_Callback()
+    #################################################
+
+    #################################################
+    if MYPRINT_OPEN_FLAG == 1:
+        MyPrint_ReubenPython2and3ClassObject.ExitProgram_Callback()
+    #################################################
+
+    #################################################
+    #################################################
+
 ##########################################################################################################
 ##########################################################################################################
