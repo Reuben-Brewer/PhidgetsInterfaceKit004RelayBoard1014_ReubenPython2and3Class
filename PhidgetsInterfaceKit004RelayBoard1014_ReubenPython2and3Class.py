@@ -6,22 +6,27 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision D, 03/13/2022
+Software Revision E, 07/18/2022
 
 Verified working on: Python 2.7, 3.8 for Windows 8.1, 10 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
 
 __author__ = 'reuben.brewer'
 
-import os, sys, platform
-import time, datetime
+#########################################################
+import os
+import sys
+import platform
+import time
+import datetime
 import math
 import collections
 import inspect #To enable 'TellWhichFileWereIn'
 import threading
 import traceback
+#########################################################
 
-###############
+#########################################################
 if sys.version_info[0] < 3:
     from Tkinter import * #Python 2
     import tkFont
@@ -30,39 +35,36 @@ else:
     from tkinter import * #Python 3
     import tkinter.font as tkFont #Python 3
     from tkinter import ttk
-###############
+#########################################################
 
-###############
+#########################################################
 if sys.version_info[0] < 3:
     import Queue  # Python 2
 else:
     import queue as Queue  # Python 3
-###############
+#########################################################
 
-###############
+#########################################################
 if sys.version_info[0] < 3:
     from builtins import raw_input as input
 else:
     from future.builtins import input as input
-############### #"sudo pip3 install future" (Python 3) AND "sudo pip install future" (Python 2)
+######################################################### "sudo pip3 install future" (Python 3) AND "sudo pip install future" (Python 2)
 
-###############
+#########################################################
 import platform
 if platform.system() == "Windows":
     import ctypes
     winmm = ctypes.WinDLL('winmm')
     winmm.timeBeginPeriod(1) #Set minimum timer resolution to 1ms so that time.sleep(0.001) behaves properly.
-###############
+#########################################################
 
 ###########################################################
-###########################################################
-#To install Phidget22, enter folder "Phidget22Python_1.0.0.20190107\Phidget22Python" and type "python setup.py install"
 from Phidget22.PhidgetException import *
 from Phidget22.Phidget import *
 from Phidget22.Devices.Log import *
 from Phidget22.LogLevel import *
 from Phidget22.Devices.DigitalOutput import *
-###########################################################
 ###########################################################
 
 class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subclass the Tkinter Frame
@@ -74,7 +76,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         print("#################### PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__ starting. ####################")
 
         self.EXIT_PROGRAM_FLAG = 0
-        self.OBJECT_CREATED_SUCCESSFULLY_FLAG = -1
+        self.OBJECT_CREATED_SUCCESSFULLY_FLAG = 0
         self.EnableInternal_MyPrint_Flag = 0
         self.MainThread_still_running_flag = 0
 
@@ -104,12 +106,10 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         self.DigitalOutputsList_State_NeedsToBeChangedFlag = [1] * self.NumberOfDigitalOutputs
         self.DigitalOutputsList_State_ToBeSet = [0] * self.NumberOfDigitalOutputs
 
-        self.MostRecentDataDict = dict([("DigitalOutputsList_State", self.DigitalOutputsList_State),
-                                        ("DigitalOutputsList_ErrorCallbackFiredFlag", self.DigitalOutputsList_ErrorCallbackFiredFlag),
-                                        ("Time", self.CurrentTime_CalculatedFromMainThread)])
+        self.MostRecentDataDict = dict()
 
-        ##########################################
-        ##########################################
+        #########################################################
+        #########################################################
         if platform.system() == "Linux":
 
             if "raspberrypi" in platform.uname(): #os.uname() doesn't work in windows
@@ -126,208 +126,232 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         else:
             self.my_platform = "other"
 
-        print("The OS platform is: " + self.my_platform)
-        ##########################################
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: The OS platform is: " + self.my_platform)
+        #########################################################
+        #########################################################
 
-        ##########################################
-        ##########################################
+        #########################################################
+        #########################################################
         if "GUIparametersDict" in setup_dict:
             self.GUIparametersDict = setup_dict["GUIparametersDict"]
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "USE_GUI_FLAG" in self.GUIparametersDict:
                 self.USE_GUI_FLAG = self.PassThrough0and1values_ExitProgramOtherwise("USE_GUI_FLAG", self.GUIparametersDict["USE_GUI_FLAG"])
             else:
                 self.USE_GUI_FLAG = 0
 
-            print("USE_GUI_FLAG = " + str(self.USE_GUI_FLAG))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: USE_GUI_FLAG: " + str(self.USE_GUI_FLAG))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "root" in self.GUIparametersDict:
                 self.root = self.GUIparametersDict["root"]
-                self.RootIsOwnedExternallyFlag = 1
             else:
-                self.root = None
-                self.RootIsOwnedExternallyFlag = 0
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: ERROR, must pass in 'root'")
+                return
+            #########################################################
+            #########################################################
 
-            print("RootIsOwnedExternallyFlag = " + str(self.RootIsOwnedExternallyFlag))
-            ##########################################
-
-            ##########################################
-            if "GUI_RootAfterCallbackInterval_Milliseconds" in self.GUIparametersDict:
-                self.GUI_RootAfterCallbackInterval_Milliseconds = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_RootAfterCallbackInterval_Milliseconds", self.GUIparametersDict["GUI_RootAfterCallbackInterval_Milliseconds"], 0.0, 1000.0))
-            else:
-                self.GUI_RootAfterCallbackInterval_Milliseconds = 30
-
-            print("GUI_RootAfterCallbackInterval_Milliseconds = " + str(self.GUI_RootAfterCallbackInterval_Milliseconds))
-            ##########################################
-
-            ##########################################
+            #########################################################
+            #########################################################
             if "EnableInternal_MyPrint_Flag" in self.GUIparametersDict:
                 self.EnableInternal_MyPrint_Flag = self.PassThrough0and1values_ExitProgramOtherwise("EnableInternal_MyPrint_Flag", self.GUIparametersDict["EnableInternal_MyPrint_Flag"])
             else:
                 self.EnableInternal_MyPrint_Flag = 0
 
-            print("EnableInternal_MyPrint_Flag: " + str(self.EnableInternal_MyPrint_Flag))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: EnableInternal_MyPrint_Flag: " + str(self.EnableInternal_MyPrint_Flag))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "PrintToConsoleFlag" in self.GUIparametersDict:
                 self.PrintToConsoleFlag = self.PassThrough0and1values_ExitProgramOtherwise("PrintToConsoleFlag", self.GUIparametersDict["PrintToConsoleFlag"])
             else:
                 self.PrintToConsoleFlag = 1
 
-            print("PrintToConsoleFlag: " + str(self.PrintToConsoleFlag))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: PrintToConsoleFlag: " + str(self.PrintToConsoleFlag))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "NumberOfPrintLines" in self.GUIparametersDict:
                 self.NumberOfPrintLines = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("NumberOfPrintLines", self.GUIparametersDict["NumberOfPrintLines"], 0.0, 50.0))
             else:
                 self.NumberOfPrintLines = 10
 
-            print("NumberOfPrintLines = " + str(self.NumberOfPrintLines))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: NumberOfPrintLines: " + str(self.NumberOfPrintLines))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "UseBorderAroundThisGuiObjectFlag" in self.GUIparametersDict:
                 self.UseBorderAroundThisGuiObjectFlag = self.PassThrough0and1values_ExitProgramOtherwise("UseBorderAroundThisGuiObjectFlag", self.GUIparametersDict["UseBorderAroundThisGuiObjectFlag"])
             else:
                 self.UseBorderAroundThisGuiObjectFlag = 0
 
-            print("UseBorderAroundThisGuiObjectFlag: " + str(self.UseBorderAroundThisGuiObjectFlag))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: UseBorderAroundThisGuiObjectFlag: " + str(self.UseBorderAroundThisGuiObjectFlag))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_ROW" in self.GUIparametersDict:
                 self.GUI_ROW = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_ROW", self.GUIparametersDict["GUI_ROW"], 0.0, 1000.0))
             else:
                 self.GUI_ROW = 0
 
-            print("GUI_ROW = " + str(self.GUI_ROW))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_ROW: " + str(self.GUI_ROW))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_COLUMN" in self.GUIparametersDict:
                 self.GUI_COLUMN = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_COLUMN", self.GUIparametersDict["GUI_COLUMN"], 0.0, 1000.0))
             else:
                 self.GUI_COLUMN = 0
 
-            print("GUI_COLUMN = " + str(self.GUI_COLUMN))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_COLUMN: " + str(self.GUI_COLUMN))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_PADX" in self.GUIparametersDict:
                 self.GUI_PADX = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_PADX", self.GUIparametersDict["GUI_PADX"], 0.0, 1000.0))
             else:
                 self.GUI_PADX = 0
 
-            print("GUI_PADX = " + str(self.GUI_PADX))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_PADX: " + str(self.GUI_PADX))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_PADY" in self.GUIparametersDict:
                 self.GUI_PADY = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_PADY", self.GUIparametersDict["GUI_PADY"], 0.0, 1000.0))
             else:
                 self.GUI_PADY = 0
 
-            print("GUI_PADY = " + str(self.GUI_PADY))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_PADY: " + str(self.GUI_PADY))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_ROWSPAN" in self.GUIparametersDict:
                 self.GUI_ROWSPAN = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_ROWSPAN", self.GUIparametersDict["GUI_ROWSPAN"], 0.0, 1000.0))
             else:
-                self.GUI_ROWSPAN = 0
+                self.GUI_ROWSPAN = 1
 
-            print("GUI_ROWSPAN = " + str(self.GUI_ROWSPAN))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_ROWSPAN: " + str(self.GUI_ROWSPAN))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_COLUMNSPAN" in self.GUIparametersDict:
                 self.GUI_COLUMNSPAN = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("GUI_COLUMNSPAN", self.GUIparametersDict["GUI_COLUMNSPAN"], 0.0, 1000.0))
             else:
-                self.GUI_COLUMNSPAN = 0
+                self.GUI_COLUMNSPAN = 1
 
-            print("GUI_COLUMNSPAN = " + str(self.GUI_COLUMNSPAN))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_COLUMNSPAN: " + str(self.GUI_COLUMNSPAN))
+            #########################################################
+            #########################################################
 
-            ##########################################
+            #########################################################
+            #########################################################
             if "GUI_STICKY" in self.GUIparametersDict:
                 self.GUI_STICKY = str(self.GUIparametersDict["GUI_STICKY"])
             else:
                 self.GUI_STICKY = "w"
 
-            print("GUI_STICKY = " + str(self.GUI_STICKY))
-            ##########################################
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUI_STICKY: " + str(self.GUI_STICKY))
+            #########################################################
+            #########################################################
 
         else:
             self.GUIparametersDict = dict()
             self.USE_GUI_FLAG = 0
             print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: No GUIparametersDict present, setting USE_GUI_FLAG = " + str(self.USE_GUI_FLAG))
 
-        print("GUIparametersDict = " + str(self.GUIparametersDict))
-        ##########################################
-        ##########################################
+        #print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: GUIparametersDict: " + str(self.GUIparametersDict))
+        #########################################################
+        #########################################################
 
-        ##########################################
+        #########################################################
+        #########################################################
         if "DesiredSerialNumber" in setup_dict:
             try:
                 self.DesiredSerialNumber = int(setup_dict["DesiredSerialNumber"])
             except:
-                print("ERROR: DesiredSerialNumber invalid.")
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Error, DesiredSerialNumber invalid.")
         else:
-            self.OBJECT_CREATED_SUCCESSFULLY_FLAG = 0
-            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__ ERROR: Must initialize object with 'DesiredSerialNumber' argument.")
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Error, must initialize object with 'DesiredSerialNumber' argument.")
             return
         
-        print("DesiredSerialNumber: " + str(self.DesiredSerialNumber))
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DesiredSerialNumber: " + str(self.DesiredSerialNumber))
+        #########################################################
+        #########################################################
 
-        ##########################################
+        #########################################################
+        #########################################################
         if "NameToDisplay_UserSet" in setup_dict:
             self.NameToDisplay_UserSet = str(setup_dict["NameToDisplay_UserSet"])
         else:
             self.NameToDisplay_UserSet = ""
-            ##########################################
 
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: NameToDisplay_UserSet: " + str(self.NameToDisplay_UserSet))
+        #########################################################
+        #########################################################
+
+        #########################################################
+        #########################################################
         if "WaitForAttached_TimeoutDuration_Milliseconds" in setup_dict:
             self.WaitForAttached_TimeoutDuration_Milliseconds = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("WaitForAttached_TimeoutDuration_Milliseconds", setup_dict["WaitForAttached_TimeoutDuration_Milliseconds"], 0.0, 60000.0))
 
         else:
             self.WaitForAttached_TimeoutDuration_Milliseconds = 5000
 
-        print("WaitForAttached_TimeoutDuration_Milliseconds: " + str(self.WaitForAttached_TimeoutDuration_Milliseconds))
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: WaitForAttached_TimeoutDuration_Milliseconds: " + str(self.WaitForAttached_TimeoutDuration_Milliseconds))
+        #########################################################
+        #########################################################
 
-        ##########################################
+        #########################################################
+        #########################################################
         if "UsePhidgetsLoggingInternalToThisClassObjectFlag" in setup_dict:
             self.UsePhidgetsLoggingInternalToThisClassObjectFlag = self.PassThrough0and1values_ExitProgramOtherwise("UsePhidgetsLoggingInternalToThisClassObjectFlag", setup_dict["UsePhidgetsLoggingInternalToThisClassObjectFlag"])
         else:
             self.UsePhidgetsLoggingInternalToThisClassObjectFlag = 1
 
-        print("UsePhidgetsLoggingInternalToThisClassObjectFlag: " + str(self.UsePhidgetsLoggingInternalToThisClassObjectFlag))
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: UsePhidgetsLoggingInternalToThisClassObjectFlag: " + str(self.UsePhidgetsLoggingInternalToThisClassObjectFlag))
+        #########################################################
+        #########################################################
 
-       ##########################################
+        #########################################################
+        #########################################################
         if "MainThread_TimeToSleepEachLoop" in setup_dict:
             self.MainThread_TimeToSleepEachLoop = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("MainThread_TimeToSleepEachLoop", setup_dict["MainThread_TimeToSleepEachLoop"], 0.001, 100000)
 
         else:
             self.MainThread_TimeToSleepEachLoop = 0.005
 
-        print("MainThread_TimeToSleepEachLoop: " + str(self.MainThread_TimeToSleepEachLoop))
-        ##########################################
+        print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: MainThread_TimeToSleepEachLoop: " + str(self.MainThread_TimeToSleepEachLoop))
+        #########################################################
+        #########################################################
 
+        #########################################################
         #########################################################
         self.PrintToGui_Label_TextInputHistory_List = [" "]*self.NumberOfPrintLines
         self.PrintToGui_Label_TextInput_Str = ""
         self.GUI_ready_to_be_updated_flag = 0
-        #########################################################
-
         #########################################################
         #########################################################
 
@@ -377,87 +401,88 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
         except PhidgetException as e:
             self.PhidgetsDeviceConnectedFlag = 0
-            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__Failed to attach, Phidget Exception %i: %s" % (e.code, e.details))
+            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to attach, Phidget Exception %i: %s" % (e.code, e.details))
         #########################################################
         #########################################################
 
         #########################################################
         #########################################################
         if self.PhidgetsDeviceConnectedFlag == 1:
-            dummy_var = 0
 
             #########################################################
             if self.UsePhidgetsLoggingInternalToThisClassObjectFlag == 1:
                 try:
                     Log.enable(LogLevel.PHIDGET_LOG_INFO, os.getcwd() + "\PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class_PhidgetLog_INFO.txt")
-                    print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__Enabled Phidget Logging.")
+                    print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Enabled Phidget Logging.")
                 except PhidgetException as e:
-                    print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__Failed to enable Phidget Logging, Phidget Exception %i: %s" % (e.code, e.details))
+                    print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to enable Phidget Logging, Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
                 self.DetectedDeviceName = self.DigitalOutput0object.getDeviceName()
-                print("DetectedDeviceName: " + self.DetectedDeviceName)
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceName: " + self.DetectedDeviceName)
 
             except PhidgetException as e:
-                print("Failed to call 'getDeviceName', Phidget Exception %i: %s" % (e.code, e.details))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to call 'getDeviceName', Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
                 self.DetectedDeviceSerialNumber = self.DigitalOutput0object.getDeviceSerialNumber()
-                print("DetectedDeviceSerialNumber: " + str(self.DetectedDeviceSerialNumber))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceSerialNumber: " + str(self.DetectedDeviceSerialNumber))
 
             except PhidgetException as e:
-                print("Failed to call 'getDeviceSerialNumber', Phidget Exception %i: %s" % (e.code, e.details))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to call 'getDeviceSerialNumber', Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
                 self.DetectedDeviceID = self.DigitalOutput0object.getDeviceID()
-                print("DetectedDeviceID: " + str(self.DetectedDeviceID))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceID: " + str(self.DetectedDeviceID))
 
             except PhidgetException as e:
-                print("Failed to call 'getDeviceID', Phidget Exception %i: %s" % (e.code, e.details))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to call 'getDeviceID', Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
                 self.DetectedDeviceVersion = self.DigitalOutput0object.getDeviceVersion()
-                print("DetectedDeviceVersion: " + str(self.DetectedDeviceVersion))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceVersion: " + str(self.DetectedDeviceVersion))
 
             except PhidgetException as e:
-                print("Failed to call 'getDeviceVersion', Phidget Exception %i: %s" % (e.code, e.details))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to call 'getDeviceVersion', Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
                 self.DetectedDeviceLibraryVersion = self.DigitalOutput0object.getLibraryVersion()
-                print("DetectedDeviceLibraryVersion: " + str(self.DetectedDeviceLibraryVersion))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceLibraryVersion: " + str(self.DetectedDeviceLibraryVersion))
 
             except PhidgetException as e:
-                print("Failed to call 'getLibraryVersion', Phidget Exception %i: %s" % (e.code, e.details))
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to call 'getLibraryVersion', Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             if self.DetectedDeviceSerialNumber != self.DesiredSerialNumber:
-                print("The desired Serial Number (" + str(self.DesiredSerialNumber) + ") does not match the detected serial number (" + str(self.DetectedDeviceSerialNumber) + ").")
-                input("Press any key (and enter) to exit.")
+                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: The desired Serial Number (" + str(self.DesiredSerialNumber) + ") does not match the detected serial number (" + str(self.DetectedDeviceSerialNumber) + ").")
+                input("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Press any key (and enter) to exit.")
                 sys.exit()
             #########################################################
 
-            ##########################################
+            #########################################################
             self.MainThread_ThreadingObject = threading.Thread(target=self.MainThread, args=())
             self.MainThread_ThreadingObject.start()
-            ##########################################
+            #########################################################
 
-            ##########################################
+            #########################################################
             if self.USE_GUI_FLAG == 1:
                 self.StartGUI(self.root)
-            ##########################################
+            #########################################################
 
+            #########################################################
             self.OBJECT_CREATED_SUCCESSFULLY_FLAG = 1
+            #########################################################
 
         #########################################################
         #########################################################
@@ -468,7 +493,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
     #######################################################################################################################
     #######################################################################################################################
     def __del__(self):
-        dummy_var = 0
+        pass
     #######################################################################################################################
     #######################################################################################################################
 
@@ -741,11 +766,15 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
     ##########################################################################################################
     def GetMostRecentDataDict(self):
 
-        self.MostRecentDataDict = dict([("DigitalOutputsList_State", self.DigitalOutputsList_State),
+        if self.EXIT_PROGRAM_FLAG == 0:
+            self.MostRecentDataDict = dict([("DigitalOutputsList_State", self.DigitalOutputsList_State),
                                              ("DigitalOutputsList_ErrorCallbackFiredFlag", self.DigitalOutputsList_ErrorCallbackFiredFlag),
                                              ("Time", self.CurrentTime_CalculatedFromMainThread)])
 
-        return self.MostRecentDataDict
+            return self.MostRecentDataDict
+
+        else:
+            return dict() #So that we're not returning variables during the close-down process.
     ##########################################################################################################
     ##########################################################################################################
 
@@ -836,34 +865,23 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
     ##########################################################################################################
     ##########################################################################################################
-    def StartGUI(self, GuiParent=None):
+    def StartGUI(self, GuiParent):
 
-        GUI_Thread_ThreadingObject = threading.Thread(target=self.GUI_Thread, args=(GuiParent,))
-        GUI_Thread_ThreadingObject.setDaemon(True) #Should mean that the GUI thread is destroyed automatically when the main thread is destroyed.
-        GUI_Thread_ThreadingObject.start()
+        self.GUI_Thread_ThreadingObject = threading.Thread(target=self.GUI_Thread, args=(GuiParent,))
+        self.GUI_Thread_ThreadingObject.setDaemon(True) #Should mean that the GUI thread is destroyed automatically when the main thread is destroyed.
+        self.GUI_Thread_ThreadingObject.start()
     ##########################################################################################################
     ##########################################################################################################
 
     ##########################################################################################################
     ##########################################################################################################
-    def GUI_Thread(self, parent=None):
+    def GUI_Thread(self, parent):
 
         print("Starting the GUI_Thread for PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class object.")
 
         ###################################################
-        if parent == None:  #This class object owns root and must handle it properly
-            self.root = Tk()
-            self.parent = self.root
-
-            ################################################### SET THE DEFAULT FONT FOR ALL WIDGETS CREATED AFTTER/BELOW THIS CALL
-            default_font = tkFont.nametofont("TkDefaultFont")
-            default_font.configure(size=8)
-            self.root.option_add("*Font", default_font)
-            ###################################################
-
-        else:
-            self.root = parent
-            self.parent = parent
+        self.root = parent
+        self.parent = parent
         ###################################################
 
         ###################################################
@@ -887,34 +905,26 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
         self.TKinter_LightRedColor = '#%02x%02x%02x' % (255, 150, 150) #RGB
         self.TKinter_LightYellowColor = '#%02x%02x%02x' % (255, 255, 150)  # RGB
         self.TKinter_DefaultGrayColor = '#%02x%02x%02x' % (240, 240, 240)  # RGB
-        self.TkinterScaleWidth = 10
-        self.TkinterScaleLength = 250
         ###################################################
 
         #################################################
-        self.device_info_label = Label(self.myFrame, text="Device Info", width=50) #, font=("Helvetica", 16)
+        self.DeviceInfo_label = Label(self.myFrame, text="Device Info", width=50)
 
-        self.device_info_label["text"] = self.NameToDisplay_UserSet + \
+        self.DeviceInfo_label["text"] = self.NameToDisplay_UserSet + \
                                          "\nDevice Name: " + self.DetectedDeviceName + \
                                          "\nDevice Serial Number: " + str(self.DetectedDeviceSerialNumber) + \
                                          "\nDevice Version: " + str(self.DetectedDeviceVersion)
 
-        self.device_info_label.grid(row=0, column=0, padx=5, pady=1, columnspan=1, rowspan=1)
+        self.DeviceInfo_label.grid(row=0, column=0, padx=5, pady=1, columnspan=1, rowspan=1)
         #################################################
 
         #################################################
         self.DigitalOutputs_Label = Label(self.myFrame, text="DigitalOutputs_Label", width=70)
-        self.DigitalOutputs_Label.grid(row=0, column=1, padx=5, pady=1, columnspan=1, rowspan=10)
+        self.DigitalOutputs_Label.grid(row=0, column=1, padx=5, pady=1, columnspan=1, rowspan=1)
         #################################################
         
         #################################################
-
         self.DigitalOutputButtonsFrame = Frame(self.myFrame)
-
-        #if self.UseBorderAroundThisGuiObjectFlag == 1:
-        #    self.myFrame["borderwidth"] = 2
-        #    self.myFrame["relief"] = "ridge"
-
         self.DigitalOutputButtonsFrame.grid(row = 1, column = 0, padx = 1, pady = 1, rowspan = 1, columnspan = 1)
 
         self.DigitalOutputsList_ButtonObjects = []
@@ -923,28 +933,15 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
             self.DigitalOutputsList_ButtonObjects[DigitalOutputChannel].grid(row=1, column=DigitalOutputChannel, padx=1, pady=1)
         #################################################
 
-        ########################
+        ###################################################
         self.PrintToGui_Label = Label(self.myFrame, text="PrintToGui_Label", width=75)
         if self.EnableInternal_MyPrint_Flag == 1:
-            self.PrintToGui_Label.grid(row=0, column=2, padx=1, pady=1, columnspan=1, rowspan=10)
-        ########################
+            self.PrintToGui_Label.grid(row=2, column=0, padx=1, pady=1, columnspan=1, rowspan=10)
+        ###################################################
 
-        ########################
-        if self.RootIsOwnedExternallyFlag == 0: #This class object owns root and must handle it properly
-            self.root.protocol("WM_DELETE_WINDOW", self.ExitProgram_Callback)
-
-            self.root.after(self.GUI_RootAfterCallbackInterval_Milliseconds, self.GUI_update_clock)
-            self.GUI_ready_to_be_updated_flag = 1
-            self.root.mainloop()
-        else:
-            self.GUI_ready_to_be_updated_flag = 1
-        ########################
-
-        ########################
-        if self.RootIsOwnedExternallyFlag == 0: #This class object owns root and must handle it properly
-            self.root.quit()  # Stop the GUI thread, MUST BE CALLED FROM GUI_Thread
-            self.root.destroy()  # Close down the GUI thread, MUST BE CALLED FROM GUI_Thread
-        ########################
+        ###################################################
+        self.GUI_ready_to_be_updated_flag = 1
+        ###################################################
 
     ##########################################################################################################
     ##########################################################################################################
@@ -991,13 +988,6 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                     exceptions = sys.exc_info()[0]
                     print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class GUI_update_clock ERROR: Exceptions: %s" % exceptions)
                     traceback.print_exc()
-                #######################################################
-                #######################################################
-
-                #######################################################
-                #######################################################
-                if self.RootIsOwnedExternallyFlag == 0:  # This class object owns root and must handle it properly
-                    self.root.after(self.GUI_RootAfterCallbackInterval_Milliseconds, self.GUI_update_clock)
                 #######################################################
                 #######################################################
 
