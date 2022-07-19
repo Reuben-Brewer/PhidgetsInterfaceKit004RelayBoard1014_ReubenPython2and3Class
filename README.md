@@ -21,7 +21,7 @@ www.reubotics.com
 
 Apache 2 License
 
-Software Revision D, 03/13/2022
+Software Revision E, 07/18/2022
 
 Verified working on: 
 
@@ -38,6 +38,14 @@ Raspberry Pi Buster
 ########################  
 
 ########################### Python module installation instructions, all OS's
+
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies: ['future.builtins', 'Phidget22']
+
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_TestProgram: ['future.builtins', 'MyPrint_ReubenPython2and3Class']
+
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_NestedLayers: ['future.builtins']
+
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_All: ['future.builtins', 'MyPrint_ReubenPython2and3Class', 'Phidget22']
 
 https://pypi.org/project/Phidget22/#files
 
