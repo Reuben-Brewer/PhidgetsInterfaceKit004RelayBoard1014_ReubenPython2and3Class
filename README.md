@@ -5,6 +5,7 @@ PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class
 Wrapper (including ability to hook to Tkinter GUI) to control Phidgets four-relay controller 1014 (non VINT).
 
 From Phidgets' website:
+
 "The 1014 has 4 Relay Outputs for switching AC or DC power; the relays are Single Pole Double Throw (SPDT). The PhidgetInterfaceKit 0/0/4 allows you to control high power devices such as incandescent light bulbs, fans, and pumps by electronically switching power on and off."
 
 PhidgetInterfaceKit 0/0/4
@@ -21,7 +22,7 @@ www.reubotics.com
 
 Apache 2 License
 
-Software Revision E, 07/18/2022
+Software Revision F, 08/29/2022
 
 Verified working on: 
 
@@ -41,7 +42,7 @@ Raspberry Pi Buster
 
 PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies: ['future.builtins', 'Phidget22']
 
-PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_TestProgram: ['future.builtins', 'MyPrint_ReubenPython2and3Class']
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_TestProgram: ['MyPrint_ReubenPython2and3Class']
 
 PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_NestedLayers: ['future.builtins']
 
