@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision E, 07/18/2022
+Software Revision F, 08/29/2022
 
 Verified working on: Python 2.7, 3.8 for Windows 8.1, 10 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -21,6 +21,7 @@ import time
 import datetime
 import math
 import collections
+from copy import * #for deepcopy
 import inspect #To enable 'TellWhichFileWereIn'
 import threading
 import traceback
@@ -293,9 +294,9 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                 self.DesiredSerialNumber = int(setup_dict["DesiredSerialNumber"])
             except:
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Error, DesiredSerialNumber invalid.")
+                return
         else:
-            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Error, must initialize object with 'DesiredSerialNumber' argument.")
-            return
+            self.DesiredSerialNumber = -1
         
         print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DesiredSerialNumber: " + str(self.DesiredSerialNumber))
         #########################################################
@@ -357,46 +358,31 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
         #########################################################
         #########################################################
+        self.DigitalOutputsList_ListOfOnAttachCallbackFunctionNames = [self.DigitalOutput0onAttachCallback, self.DigitalOutput1onAttachCallback, self.DigitalOutput2onAttachCallback, self.DigitalOutput3onAttachCallback]
+        self.DigitalOutputsList_ListOfOnDetachCallbackFunctionNames = [self.DigitalOutput0onDetachCallback, self.DigitalOutput1onDetachCallback, self.DigitalOutput2onDetachCallback, self.DigitalOutput3onDetachCallback]
+        self.DigitalOutputsList_ListOfOnErrorCallbackFunctionNames = [self.DigitalOutput0onErrorCallback, self.DigitalOutput1onErrorCallback, self.DigitalOutput2onErrorCallback, self.DigitalOutput3onErrorCallback]
+        #########################################################
+        #########################################################
+
+        #########################################################
+        #########################################################
         try:
 
             #########################################################
-            self.DigitalOutput0object = DigitalOutput()
-            self.DigitalOutputsList_PhidgetsDigitalOutputObjects.append(self.DigitalOutput0object)
-            self.DigitalOutput0object.setDeviceSerialNumber(self.DesiredSerialNumber)
-            self.DigitalOutput0object.setChannel(0)
-            self.DigitalOutput0object.setOnAttachHandler(self.DigitalOutput0onAttachCallback)
-            self.DigitalOutput0object.setOnDetachHandler(self.DigitalOutput0onDetachCallback)
-            self.DigitalOutput0object.setOnErrorHandler(self.DigitalOutput0onErrorCallback)
-            self.DigitalOutput0object.openWaitForAttachment(self.WaitForAttached_TimeoutDuration_Milliseconds)
+            for DigitalOutputChannel in range(0, self.NumberOfDigitalOutputs):
 
-            self.DigitalOutput1object = DigitalOutput()
-            self.DigitalOutputsList_PhidgetsDigitalOutputObjects.append(self.DigitalOutput1object)
-            self.DigitalOutput1object.setDeviceSerialNumber(self.DesiredSerialNumber)
-            self.DigitalOutput1object.setChannel(1)
-            self.DigitalOutput1object.setOnAttachHandler(self.DigitalOutput1onAttachCallback)
-            self.DigitalOutput1object.setOnDetachHandler(self.DigitalOutput1onDetachCallback)
-            self.DigitalOutput1object.setOnErrorHandler(self.DigitalOutput1onErrorCallback)
-            self.DigitalOutput1object.openWaitForAttachment(self.WaitForAttached_TimeoutDuration_Milliseconds)
-            
-            self.DigitalOutput2object = DigitalOutput()
-            self.DigitalOutputsList_PhidgetsDigitalOutputObjects.append(self.DigitalOutput2object)
-            self.DigitalOutput2object.setDeviceSerialNumber(self.DesiredSerialNumber)
-            self.DigitalOutput2object.setChannel(2)
-            self.DigitalOutput2object.setOnAttachHandler(self.DigitalOutput2onAttachCallback)
-            self.DigitalOutput2object.setOnDetachHandler(self.DigitalOutput2onDetachCallback)
-            self.DigitalOutput2object.setOnErrorHandler(self.DigitalOutput2onErrorCallback)
-            self.DigitalOutput2object.openWaitForAttachment(self.WaitForAttached_TimeoutDuration_Milliseconds)
-            
-            self.DigitalOutput3object = DigitalOutput()
-            self.DigitalOutputsList_PhidgetsDigitalOutputObjects.append(self.DigitalOutput3object)
-            self.DigitalOutput3object.setDeviceSerialNumber(self.DesiredSerialNumber)
-            self.DigitalOutput3object.setChannel(3)
-            self.DigitalOutput3object.setOnAttachHandler(self.DigitalOutput3onAttachCallback)
-            self.DigitalOutput3object.setOnDetachHandler(self.DigitalOutput3onDetachCallback)
-            self.DigitalOutput3object.setOnErrorHandler(self.DigitalOutput3onErrorCallback)
-            self.DigitalOutput3object.openWaitForAttachment(self.WaitForAttached_TimeoutDuration_Milliseconds)
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects.append(DigitalOutput())
+
+                if self.DesiredSerialNumber != -1:
+                    self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].setDeviceSerialNumber(self.DesiredSerialNumber)
+
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].setChannel(DigitalOutputChannel)
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].setOnAttachHandler(self.DigitalOutputsList_ListOfOnAttachCallbackFunctionNames[DigitalOutputChannel])
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].setOnDetachHandler(self.DigitalOutputsList_ListOfOnDetachCallbackFunctionNames[DigitalOutputChannel])
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].setOnErrorHandler(self.DigitalOutputsList_ListOfOnErrorCallbackFunctionNames[DigitalOutputChannel])
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].openWaitForAttachment(self.WaitForAttached_TimeoutDuration_Milliseconds)
             #########################################################
-
+            
             self.PhidgetsDeviceConnectedFlag = 1
 
         except PhidgetException as e:
@@ -414,13 +400,14 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                 try:
                     Log.enable(LogLevel.PHIDGET_LOG_INFO, os.getcwd() + "\PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class_PhidgetLog_INFO.txt")
                     print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Enabled Phidget Logging.")
+
                 except PhidgetException as e:
                     print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Failed to enable Phidget Logging, Phidget Exception %i: %s" % (e.code, e.details))
             #########################################################
 
             #########################################################
             try:
-                self.DetectedDeviceName = self.DigitalOutput0object.getDeviceName()
+                self.DetectedDeviceName = self.DigitalOutputsList_PhidgetsDigitalOutputObjects[0].getDeviceName()
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceName: " + self.DetectedDeviceName)
 
             except PhidgetException as e:
@@ -429,7 +416,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
             #########################################################
             try:
-                self.DetectedDeviceSerialNumber = self.DigitalOutput0object.getDeviceSerialNumber()
+                self.DetectedDeviceSerialNumber = self.DigitalOutputsList_PhidgetsDigitalOutputObjects[0].getDeviceSerialNumber()
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceSerialNumber: " + str(self.DetectedDeviceSerialNumber))
 
             except PhidgetException as e:
@@ -438,7 +425,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
             #########################################################
             try:
-                self.DetectedDeviceID = self.DigitalOutput0object.getDeviceID()
+                self.DetectedDeviceID = self.DigitalOutputsList_PhidgetsDigitalOutputObjects[0].getDeviceID()
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceID: " + str(self.DetectedDeviceID))
 
             except PhidgetException as e:
@@ -447,7 +434,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
             #########################################################
             try:
-                self.DetectedDeviceVersion = self.DigitalOutput0object.getDeviceVersion()
+                self.DetectedDeviceVersion = self.DigitalOutputsList_PhidgetsDigitalOutputObjects[0].getDeviceVersion()
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceVersion: " + str(self.DetectedDeviceVersion))
 
             except PhidgetException as e:
@@ -456,7 +443,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
             #########################################################
             try:
-                self.DetectedDeviceLibraryVersion = self.DigitalOutput0object.getLibraryVersion()
+                self.DetectedDeviceLibraryVersion = self.DigitalOutputsList_PhidgetsDigitalOutputObjects[0].getLibraryVersion()
                 print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: DetectedDeviceLibraryVersion: " + str(self.DetectedDeviceLibraryVersion))
 
             except PhidgetException as e:
@@ -464,10 +451,12 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
             #########################################################
 
             #########################################################
-            if self.DetectedDeviceSerialNumber != self.DesiredSerialNumber:
-                print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: The desired Serial Number (" + str(self.DesiredSerialNumber) + ") does not match the detected serial number (" + str(self.DetectedDeviceSerialNumber) + ").")
-                input("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: Press any key (and enter) to exit.")
-                sys.exit()
+            if self.DesiredSerialNumber != -1:  # '-1' means we should open the device regardless os serial number.
+                if self.DetectedDeviceSerialNumber != self.DesiredSerialNumber:
+                    print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class __init__: The desired Serial Number (" + str(self.DesiredSerialNumber) + ") does not match the detected serial number (" + str(self.DetectedDeviceSerialNumber) + ").")
+                    self.CloseAllDigitalOutputChannels()
+                    time.sleep(0.25)
+                    return
             #########################################################
 
             #########################################################
@@ -478,6 +467,10 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
             #########################################################
             if self.USE_GUI_FLAG == 1:
                 self.StartGUI(self.root)
+            #########################################################
+
+            #########################################################
+            time.sleep(0.25)
             #########################################################
 
             #########################################################
@@ -558,6 +551,20 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
             print("PassThroughFloatValuesInRange_ExitProgramOtherwise Error, Exceptions: %s" % exceptions)
             input("Press any key to continue")
             sys.exit()
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    def CloseAllDigitalOutputChannels(self):
+
+        try:
+            for DigitalOutputChannel in range(0, self.NumberOfDigitalOutputs):
+                self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].close()
+
+        except PhidgetException as e:
+            print("CloseAllDigitalOutputChannels, Phidget Exception %i: %s" % (e.code, e.details))
+
     ##########################################################################################################
     ##########################################################################################################
 
@@ -771,7 +778,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                                              ("DigitalOutputsList_ErrorCallbackFiredFlag", self.DigitalOutputsList_ErrorCallbackFiredFlag),
                                              ("Time", self.CurrentTime_CalculatedFromMainThread)])
 
-            return self.MostRecentDataDict
+            return deepcopy(self.MostRecentDataDict) #deepcopy IS required as MostRecentDataDict contains lists.
 
         else:
             return dict() #So that we're not returning variables during the close-down process.
@@ -797,6 +804,7 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
     ##########################################################################################################
 
     ##########################################################################################################
+    ##########################################################################################################
     ########################################################################################################## unicorn
     def MainThread(self):
 
@@ -806,14 +814,15 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
         self.StartingTime_CalculatedFromMainThread = self.getPreciseSecondsTimeStampString()
 
-        ###############################################
+        ##########################################################################################################
+        ##########################################################################################################
         while self.EXIT_PROGRAM_FLAG == 0:
 
-            ###############################################
+            ##########################################################################################################
             self.CurrentTime_CalculatedFromMainThread = self.getPreciseSecondsTimeStampString() - self.StartingTime_CalculatedFromMainThread
-            ###############################################
+            ##########################################################################################################
 
-            ###############################################
+            ##########################################################################################################
             for DigitalOutputChannel in range(0, self.NumberOfDigitalOutputs):
 
                 if self.DigitalOutputsList_State_NeedsToBeChangedFlag[DigitalOutputChannel] == 1:
@@ -825,30 +834,24 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
                     if self.DigitalOutputsList_State[DigitalOutputChannel] == self.DigitalOutputsList_State_ToBeSet[DigitalOutputChannel]:
                         self.DigitalOutputsList_State_NeedsToBeChangedFlag[DigitalOutputChannel] = 0
 
-            ###############################################
+            ##########################################################################################################
 
-            ############################################### USE THE TIME.SLEEP() TO SET THE LOOP FREQUENCY
-            ###############################################
-            ###############################################
+            ########################################################################################################## USE THE TIME.SLEEP() TO SET THE LOOP FREQUENCY
             self.UpdateFrequencyCalculation_MainThread()
 
             if self.MainThread_TimeToSleepEachLoop > 0.0:
                 time.sleep(self.MainThread_TimeToSleepEachLoop)
+            ##########################################################################################################
 
-            ###############################################
-            ###############################################
-            ###############################################
+        ##########################################################################################################
+        ##########################################################################################################
 
-        ###############################################
-
-        ###############################################
-        for DigitalOutputChannel in range(0, self.NumberOfDigitalOutputs):
-            self.DigitalOutputsList_PhidgetsDigitalOutputObjects[DigitalOutputChannel].close()
-        ###############################################
+        self.CloseAllDigitalOutputChannels()
 
         self.MyPrint_WithoutLogFile("Finished MainThread for PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class object.")
         
         self.MainThread_still_running_flag = 0
+    ##########################################################################################################
     ##########################################################################################################
     ##########################################################################################################
 
@@ -1005,60 +1008,6 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
     ##########################################################################################################
     ##########################################################################################################
-    def IsInputList(self, input, print_result_flag = 0):
-
-        result = isinstance(input, list)
-
-        if print_result_flag == 1:
-            self.MyPrint_WithoutLogFile("IsInputList: " + str(result))
-
-        return result
-    ##########################################################################################################
-    ##########################################################################################################
-
-    ##########################################################################################################
-    ##########################################################################################################
-    def ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput(self, input, number_of_leading_numbers=4, number_of_decimal_places=3):
-        IsListFlag = self.IsInputList(input)
-
-        if IsListFlag == 0:
-            float_number_list = [input]
-        else:
-            float_number_list = list(input)
-
-        float_number_list_as_strings = []
-        for element in float_number_list:
-            try:
-                element = float(element)
-                prefix_string = "{:." + str(number_of_decimal_places) + "f}"
-                element_as_string = prefix_string.format(element)
-                float_number_list_as_strings.append(element_as_string)
-            except:
-                self.MyPrint_WithoutLogFile(self.TellWhichFileWereIn() + ": ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput ERROR: " + str(element) + " cannot be turned into a float")
-                return -1
-
-        StringToReturn = ""
-        if IsListFlag == 0:
-            StringToReturn = float_number_list_as_strings[0].zfill(number_of_leading_numbers + number_of_decimal_places + 1 + 1)  # +1 for sign, +1 for decimal place
-        else:
-            StringToReturn = "["
-            for index, StringElement in enumerate(float_number_list_as_strings):
-                if float_number_list[index] >= 0:
-                    StringElement = "+" + StringElement  # So that our strings always have either + or - signs to maintain the same string length
-
-                StringElement = StringElement.zfill(number_of_leading_numbers + number_of_decimal_places + 1 + 1)  # +1 for sign, +1 for decimal place
-
-                if index != len(float_number_list_as_strings) - 1:
-                    StringToReturn = StringToReturn + StringElement + ", "
-                else:
-                    StringToReturn = StringToReturn + StringElement + "]"
-
-        return StringToReturn
-    ##########################################################################################################
-    ##########################################################################################################
-
-    ##########################################################################################################
-    ##########################################################################################################
     def DigitalOutputsList_ButtonObjectsResponse(self, DigitalOutputChannel):
 
         if self.DigitalOutputsList_State[DigitalOutputChannel] == 1:
@@ -1104,3 +1053,175 @@ class PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(Frame): #Subc
 
     ##########################################################################################################
     ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    def IsInputList(self, InputToCheck):
+
+        result = isinstance(InputToCheck, list)
+        return result
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    def ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput(self, input, number_of_leading_numbers = 4, number_of_decimal_places = 3):
+
+        number_of_decimal_places = max(1, number_of_decimal_places) #Make sure we're above 1
+
+        ListOfStringsToJoin = []
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        if isinstance(input, str) == 1:
+            ListOfStringsToJoin.append(input)
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        elif isinstance(input, int) == 1 or isinstance(input, float) == 1:
+            element = float(input)
+            prefix_string = "{:." + str(number_of_decimal_places) + "f}"
+            element_as_string = prefix_string.format(element)
+
+            ##########################################################################################################
+            ##########################################################################################################
+            if element >= 0:
+                element_as_string = element_as_string.zfill(number_of_leading_numbers + number_of_decimal_places + 1 + 1)  # +1 for sign, +1 for decimal place
+                element_as_string = "+" + element_as_string  # So that our strings always have either + or - signs to maintain the same string length
+            else:
+                element_as_string = element_as_string.zfill(number_of_leading_numbers + number_of_decimal_places + 1 + 1 + 1)  # +1 for sign, +1 for decimal place
+            ##########################################################################################################
+            ##########################################################################################################
+
+            ListOfStringsToJoin.append(element_as_string)
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        elif isinstance(input, list) == 1:
+
+            if len(input) > 0:
+                for element in input: #RECURSION
+                    ListOfStringsToJoin.append(self.ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput(element, number_of_leading_numbers, number_of_decimal_places))
+
+            else: #Situation when we get a list() or []
+                ListOfStringsToJoin.append(str(input))
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        elif isinstance(input, tuple) == 1:
+
+            if len(input) > 0:
+                for element in input: #RECURSION
+                    ListOfStringsToJoin.append("TUPLE" + self.ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput(element, number_of_leading_numbers, number_of_decimal_places))
+
+            else: #Situation when we get a list() or []
+                ListOfStringsToJoin.append(str(input))
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        elif isinstance(input, dict) == 1:
+
+            if len(input) > 0:
+                for Key in input: #RECURSION
+                    ListOfStringsToJoin.append(str(Key) + ": " + self.ConvertFloatToStringWithNumberOfLeadingNumbersAndDecimalPlaces_NumberOrListInput(input[Key], number_of_leading_numbers, number_of_decimal_places))
+
+            else: #Situation when we get a dict()
+                ListOfStringsToJoin.append(str(input))
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        else:
+            ListOfStringsToJoin.append(str(input))
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+        if len(ListOfStringsToJoin) > 1:
+
+            ##########################################################################################################
+            ##########################################################################################################
+
+            ##########################################################################################################
+            StringToReturn = ""
+            for Index, StringToProcess in enumerate(ListOfStringsToJoin):
+
+                ################################################
+                if Index == 0: #The first element
+                    if StringToProcess.find(":") != -1 and StringToProcess[0] != "{": #meaning that we're processing a dict()
+                        StringToReturn = "{"
+                    elif StringToProcess.find("TUPLE") != -1 and StringToProcess[0] != "(":  # meaning that we're processing a tuple
+                        StringToReturn = "("
+                    else:
+                        StringToReturn = "["
+
+                    StringToReturn = StringToReturn + StringToProcess.replace("TUPLE","") + ", "
+                ################################################
+
+                ################################################
+                elif Index < len(ListOfStringsToJoin) - 1: #The middle elements
+                    StringToReturn = StringToReturn + StringToProcess + ", "
+                ################################################
+
+                ################################################
+                else: #The last element
+                    StringToReturn = StringToReturn + StringToProcess
+
+                    if StringToProcess.find(":") != -1 and StringToProcess[-1] != "}":  # meaning that we're processing a dict()
+                        StringToReturn = StringToReturn + "}"
+                    elif StringToProcess.find("TUPLE") != -1 and StringToProcess[-1] != ")":  # meaning that we're processing a tuple
+                        StringToReturn = StringToReturn + ")"
+                    else:
+                        StringToReturn = StringToReturn + "]"
+
+                ################################################
+
+            ##########################################################################################################
+
+            ##########################################################################################################
+            ##########################################################################################################
+
+        elif len(ListOfStringsToJoin) == 1:
+            StringToReturn = ListOfStringsToJoin[0]
+
+        else:
+            StringToReturn = ListOfStringsToJoin
+
+        return StringToReturn
+        ##########################################################################################################
+        ##########################################################################################################
+        ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
