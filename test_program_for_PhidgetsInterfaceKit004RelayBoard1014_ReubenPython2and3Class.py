@@ -6,16 +6,24 @@ reuben.brewer@gmail.com,
 www.reubotics.com
 
 Apache 2 License
-Software Revision G, 09/21/2022
+Software Revision H, 01/02/2026
 
-Verified working on: Python 2.7, 3.8 for Windows 8.1, 10 64-bit and Raspberry Pi Buster (no Mac testing yet).
+Verified working on: Python 3.12/13 for Windows 10/11 64-bit and Raspberry Pi Bookworm (no Mac testing yet).
 '''
 
 __author__ = 'reuben.brewer'
 
+##########################################################################################################
+##########################################################################################################
+
 #########################################################
-from PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class import *
+import ReubenGithubCodeModulePaths #Replaces the need to have "ReubenGithubCodeModulePaths.pth" within "C:\Anaconda3\Lib\site-packages".
+ReubenGithubCodeModulePaths.Enable()
+#########################################################
+
+#########################################################
 from MyPrint_ReubenPython2and3Class import *
+from PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class import *
 #########################################################
 
 #########################################################
@@ -25,18 +33,16 @@ import platform
 import time
 import datetime
 import threading
+import traceback
+import math
+import keyboard
 import collections
 #########################################################
 
 #########################################################
-if sys.version_info[0] < 3:
-    from Tkinter import * #Python 2
-    import tkFont
-    import ttk
-else:
-    from tkinter import * #Python 3
-    import tkinter.font as tkFont #Python 3
-    from tkinter import ttk
+from tkinter import *
+import tkinter.font as tkFont
+from tkinter import ttk
 #########################################################
 
 #########################################################
@@ -46,6 +52,9 @@ if platform.system() == "Windows":
     winmm = ctypes.WinDLL('winmm')
     winmm.timeBeginPeriod(1) #Set minimum timer resolution to 1ms so that time.sleep(0.001) behaves properly.
 #########################################################
+
+##########################################################################################################
+##########################################################################################################
 
 ###########################################################################################################
 ##########################################################################################################
@@ -58,46 +67,34 @@ def getPreciseSecondsTimeStampString():
 
 ##########################################################################################################
 ##########################################################################################################
-def TestButtonResponse():
-    global MyPrint_ReubenPython2and3ClassObject
-    global USE_MYPRINT_FLAG
-
-    if USE_MYPRINT_FLAG == 1:
-        MyPrint_ReubenPython2and3ClassObject.my_print("Test Button was Pressed!")
-    else:
-        print("Test Button was Pressed!")
-##########################################################################################################
-##########################################################################################################
-
-##########################################################################################################
-##########################################################################################################
 def GUI_update_clock():
     global root
     global EXIT_PROGRAM_FLAG
     global GUI_RootAfterCallbackInterval_Milliseconds
     global USE_GUI_FLAG
 
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject
-    global RELAYS_OPEN_FLAG
-    global SHOW_IN_GUI_RELAYS_FLAG
+    global PhidgetsInterfaceKit004RelayBoard1014_Object
+    global PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG
+    global SHOW_IN_GUI_PhidgetsInterfaceKit004RelayBoard1014_FLAG
 
-    global MyPrint_ReubenPython2and3ClassObject
-    global MYPRINT_OPEN_FLAG
-    global SHOW_IN_GUI_MYPRINT_FLAG
+    global MyPrint_Object
+    global MyPrint_OPEN_FLAG
+    global SHOW_IN_GUI_MyPrint_FLAG
 
     if USE_GUI_FLAG == 1:
+
         if EXIT_PROGRAM_FLAG == 0:
         #########################################################
         #########################################################
 
             #########################################################
-            if RELAYS_OPEN_FLAG == 1 and SHOW_IN_GUI_RELAYS_FLAG == 1:
-                PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.GUI_update_clock()
+            if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG == 1 and SHOW_IN_GUI_PhidgetsInterfaceKit004RelayBoard1014_FLAG == 1:
+                PhidgetsInterfaceKit004RelayBoard1014_Object.GUI_update_clock()
             #########################################################
 
             #########################################################
-            if MYPRINT_OPEN_FLAG == 1 and SHOW_IN_GUI_MYPRINT_FLAG == 1:
-                MyPrint_ReubenPython2and3ClassObject.GUI_update_clock()
+            if MyPrint_OPEN_FLAG == 1 and SHOW_IN_GUI_MyPrint_FLAG == 1:
+                MyPrint_Object.GUI_update_clock()
             #########################################################
 
             root.after(GUI_RootAfterCallbackInterval_Milliseconds, GUI_update_clock)
@@ -109,7 +106,7 @@ def GUI_update_clock():
 
 ##########################################################################################################
 ##########################################################################################################
-def ExitProgram_Callback():
+def ExitProgram_Callback(OptionalArugment = 0):
     global EXIT_PROGRAM_FLAG
 
     print("ExitProgram_Callback event fired!")
@@ -129,9 +126,19 @@ def GUI_Thread():
     global GUI_RootAfterCallbackInterval_Milliseconds
     global USE_TABS_IN_GUI_FLAG
 
+    global PhidgetsInterfaceKit004RelayBoard1014_Object
+    global PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG
+
+    global MyPrint_Object
+    global MyPrint_OPEN_FLAG
+
     ################################################# KEY GUI LINE
     #################################################
     root = Tk()
+
+    root.protocol("WM_DELETE_WINDOW", ExitProgram_Callback)  # Set the callback function for when the window's closed.
+    root.title("test_program_for_PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class")
+    root.geometry('%dx%d+%d+%d' % (root_width, root_height, root_Xpos, root_Ypos)) # set the dimensions of the screen and where it is placed
     #################################################
     #################################################
 
@@ -139,15 +146,15 @@ def GUI_Thread():
     #################################################
     global TabControlObject
     global Tab_MainControls
-    global Tab_RELAYS
+    global Tab_PhidgetsInterfaceKit004RelayBoard1014
     global Tab_MyPrint
 
     if USE_TABS_IN_GUI_FLAG == 1:
         #################################################
         TabControlObject = ttk.Notebook(root)
 
-        Tab_RELAYS = ttk.Frame(TabControlObject)
-        TabControlObject.add(Tab_RELAYS, text='   RELAYS   ')
+        Tab_PhidgetsInterfaceKit004RelayBoard1014 = ttk.Frame(TabControlObject)
+        TabControlObject.add(Tab_PhidgetsInterfaceKit004RelayBoard1014, text='   RELAYS   ')
 
         Tab_MainControls = ttk.Frame(TabControlObject)
         TabControlObject.add(Tab_MainControls, text='   Main Controls   ')
@@ -161,11 +168,12 @@ def GUI_Thread():
         TabStyle = ttk.Style()
         TabStyle.configure('TNotebook.Tab', font=('Helvetica', '12', 'bold'))
         #############
+
         #################################################
     else:
         #################################################
         Tab_MainControls = root
-        Tab_RELAYS = root
+        Tab_PhidgetsInterfaceKit004RelayBoard1014 = root
         Tab_MyPrint = root
         #################################################
 
@@ -173,29 +181,45 @@ def GUI_Thread():
     #################################################
 
     #################################################
-    TestButton = Button(Tab_MainControls, text='Test Button', state="normal", width=20, command=lambda i=1: TestButtonResponse())
-    TestButton.grid(row=0, column=0, padx=5, pady=1)
+    #################################################
+    if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG == 1:
+        PhidgetsInterfaceKit004RelayBoard1014_Object.CreateGUIobjects(TkinterParent=Tab_PhidgetsInterfaceKit004RelayBoard1014)
+    #################################################
+    #################################################
+
+    #################################################
+    #################################################
+    if MyPrint_OPEN_FLAG == 1:
+        MyPrint_Object.CreateGUIobjects(TkinterParent=Tab_MyPrint)
+    #################################################
     #################################################
 
     ################################################# THIS BLOCK MUST COME 2ND-TO-LAST IN def GUI_Thread() IF USING TABS.
-    root.protocol("WM_DELETE_WINDOW", ExitProgram_Callback)  # Set the callback function for when the window's closed.
-    root.title("test_program_for_PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class")
-    root.geometry('%dx%d+%d+%d' % (root_width, root_height, root_Xpos, root_Ypos)) # set the dimensions of the screen and where it is placed
+    #################################################
     root.after(GUI_RootAfterCallbackInterval_Milliseconds, GUI_update_clock)
     root.mainloop()
     #################################################
+    #################################################
 
+    #################################################  THIS BLOCK MUST COME LAST IN def GUI_Thread() REGARDLESS OF CODE.
     #################################################
     root.quit() #Stop the GUI thread, MUST BE CALLED FROM GUI_Thread
     root.destroy() #Close down the GUI thread, MUST BE CALLED FROM GUI_Thread
     #################################################
+    #################################################
 
 ##########################################################################################################
 ##########################################################################################################
 
+##########################################################################################################
+##########################################################################################################
 ##########################################################################################################
 ##########################################################################################################
 if __name__ == '__main__':
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
 
     #################################################
     #################################################
@@ -229,11 +253,14 @@ if __name__ == '__main__':
     global USE_TABS_IN_GUI_FLAG
     USE_TABS_IN_GUI_FLAG = 1
 
-    global USE_RELAYS_FLAG
-    USE_RELAYS_FLAG = 1
+    global USE_PhidgetsInterfaceKit004RelayBoard1014_FLAG
+    USE_PhidgetsInterfaceKit004RelayBoard1014_FLAG = 1
 
-    global USE_MYPRINT_FLAG
-    USE_MYPRINT_FLAG = 1
+    global USE_MyPrint_FLAG
+    USE_MyPrint_FLAG = 1
+
+    global USE_KEYBOARD_FLAG
+    USE_KEYBOARD_FLAG = 1
 
     global USE_CycleThroughRelayStatesForTesting_FLAG
     USE_CycleThroughRelayStatesForTesting_FLAG = 1
@@ -242,43 +269,43 @@ if __name__ == '__main__':
 
     #################################################
     #################################################
-    global SHOW_IN_GUI_RELAYS_FLAG
-    SHOW_IN_GUI_RELAYS_FLAG = 1
+    global SHOW_IN_GUI_PhidgetsInterfaceKit004RelayBoard1014_FLAG
+    SHOW_IN_GUI_PhidgetsInterfaceKit004RelayBoard1014_FLAG = 1
 
-    global SHOW_IN_GUI_MYPRINT_FLAG
-    SHOW_IN_GUI_MYPRINT_FLAG = 1
+    global SHOW_IN_GUI_MyPrint_FLAG
+    SHOW_IN_GUI_MyPrint_FLAG = 1
     #################################################
     #################################################
 
     #################################################
     #################################################
-    global GUI_ROW_RELAYS
-    global GUI_COLUMN_RELAYS
-    global GUI_PADX_RELAYS
-    global GUI_PADY_RELAYS
-    global GUI_ROWSPAN_RELAYS
-    global GUI_COLUMNSPAN_RELAYS
-    GUI_ROW_RELAYS = 1
+    global GUI_ROW_PhidgetsInterfaceKit004RelayBoard1014
+    global GUI_COLUMN_PhidgetsInterfaceKit004RelayBoard1014
+    global GUI_PADX_PhidgetsInterfaceKit004RelayBoard1014
+    global GUI_PADY_PhidgetsInterfaceKit004RelayBoard1014
+    global GUI_ROWSPAN_PhidgetsInterfaceKit004RelayBoard1014
+    global GUI_COLUMNSPAN_PhidgetsInterfaceKit004RelayBoard1014
+    GUI_ROW_PhidgetsInterfaceKit004RelayBoard1014 = 1
 
-    GUI_COLUMN_RELAYS = 0
-    GUI_PADX_RELAYS = 1
-    GUI_PADY_RELAYS = 10
-    GUI_ROWSPAN_RELAYS = 1
-    GUI_COLUMNSPAN_RELAYS = 1
+    GUI_COLUMN_PhidgetsInterfaceKit004RelayBoard1014 = 0
+    GUI_PADX_PhidgetsInterfaceKit004RelayBoard1014 = 1
+    GUI_PADY_PhidgetsInterfaceKit004RelayBoard1014 = 10
+    GUI_ROWSPAN_PhidgetsInterfaceKit004RelayBoard1014 = 1
+    GUI_COLUMNSPAN_PhidgetsInterfaceKit004RelayBoard1014 = 1
 
-    global GUI_ROW_MYPRINT
-    global GUI_COLUMN_MYPRINT
-    global GUI_PADX_MYPRINT
-    global GUI_PADY_MYPRINT
-    global GUI_ROWSPAN_MYPRINT
-    global GUI_COLUMNSPAN_MYPRINT
-    GUI_ROW_MYPRINT = 2
+    global GUI_ROW_MyPrint
+    global GUI_COLUMN_MyPrint
+    global GUI_PADX_MyPrint
+    global GUI_PADY_MyPrint
+    global GUI_ROWSPAN_MyPrint
+    global GUI_COLUMNSPAN_MyPrint
+    GUI_ROW_MyPrint = 2
 
-    GUI_COLUMN_MYPRINT = 0
-    GUI_PADX_MYPRINT = 1
-    GUI_PADY_MYPRINT = 10
-    GUI_ROWSPAN_MYPRINT = 1
-    GUI_COLUMNSPAN_MYPRINT = 1
+    GUI_COLUMN_MyPrint = 0
+    GUI_PADX_MyPrint = 1
+    GUI_PADY_MyPrint = 10
+    GUI_ROWSPAN_MyPrint = 1
+    GUI_COLUMNSPAN_MyPrint = 1
     #################################################
     #################################################
 
@@ -309,7 +336,7 @@ if __name__ == '__main__':
 
     global TabControlObject
     global Tab_MainControls
-    global Tab_RELAYS
+    global Tab_PhidgetsInterfaceKit004RelayBoard1014
     global Tab_MyPrint
 
     global GUI_RootAfterCallbackInterval_Milliseconds
@@ -324,204 +351,253 @@ if __name__ == '__main__':
     global CycleThroughRelayStatesForTesting_StateFlipCounter
     CycleThroughRelayStatesForTesting_StateFlipCounter = 0
 
-    global CycleThroughRelayStatesForTesting_RelayStateToBeSet
-    CycleThroughRelayStatesForTesting_RelayStateToBeSet = 1
+    global CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet
+    CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet = 1
     #################################################
     #################################################
 
     #################################################
     #################################################
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject
+    global PhidgetsInterfaceKit004RelayBoard1014_Object
 
-    global RELAYS_OPEN_FLAG
-    RELAYS_OPEN_FLAG = -1
+    global PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG
+    PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG = -1
 
-    global RELAYS_MostRecentDict
-    RELAYS_MostRecentDict = dict()
+    global PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict
+    PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict = dict()
 
-    global RELAYS_MostRecentDict_DigitalOutputsList_State
-    RELAYS_MostRecentDict_DigitalOutputsList_State = [-1]*4
+    global PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_State
+    PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_State = [-1]*4
 
-    global RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag
-    RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = [-1]*4
+    global PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag
+    PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = [-1]*4
 
-    global RELAYS_MostRecentDict_Time
-    RELAYS_MostRecentDict_Time = -11111.0
+    global PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_Time
+    PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_Time = -11111.0
     #################################################
     #################################################
 
     #################################################
     #################################################
-    global MyPrint_ReubenPython2and3ClassObject
+    global MyPrint_Object
 
-    global MYPRINT_OPEN_FLAG
-    MYPRINT_OPEN_FLAG = -1
+    global MyPrint_OPEN_FLAG
+    MyPrint_OPEN_FLAG = -1
     #################################################
     #################################################
 
-    #################################################  KEY GUI LINE
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
     #################################################
-    if USE_GUI_FLAG == 1:
+    #################################################
+    global PhidgetsInterfaceKit004RelayBoard1014_GUIparametersDict
+    PhidgetsInterfaceKit004RelayBoard1014_GUIparametersDict = dict([("USE_GUI_FLAG", USE_GUI_FLAG and SHOW_IN_GUI_PhidgetsInterfaceKit004RelayBoard1014_FLAG),
+                                                                    ("EnableInternal_MyPrint_Flag", 0),
+                                                                    ("NumberOfPrintLines", 10),
+                                                                    ("UseBorderAroundThisGuiObjectFlag", 0),
+                                                                    ("GUI_ROW", GUI_ROW_PhidgetsInterfaceKit004RelayBoard1014),
+                                                                    ("GUI_COLUMN", GUI_COLUMN_PhidgetsInterfaceKit004RelayBoard1014),
+                                                                    ("GUI_PADX", GUI_PADX_PhidgetsInterfaceKit004RelayBoard1014),
+                                                                    ("GUI_PADY", GUI_PADY_PhidgetsInterfaceKit004RelayBoard1014),
+                                                                    ("GUI_ROWSPAN", GUI_ROWSPAN_PhidgetsInterfaceKit004RelayBoard1014),
+                                                                    ("GUI_COLUMNSPAN", GUI_COLUMNSPAN_PhidgetsInterfaceKit004RelayBoard1014)])
+
+    global PhidgetsInterfaceKit004RelayBoard1014_SetupDict
+    PhidgetsInterfaceKit004RelayBoard1014_SetupDict = dict([("GUIparametersDict", PhidgetsInterfaceKit004RelayBoard1014_GUIparametersDict),
+                                                            ("DesiredSerialNumber", -1), #-1 MEANS ANY SN, CHANGE THIS TO MATCH YOUR UNIQUE SERIAL NUMBER
+                                                            ("WaitForAttached_TimeoutDuration_Milliseconds", 5000),
+                                                            ("NameToDisplay_UserSet", "Reuben's Test Relay 004 Controller"),
+                                                            ("UsePhidgetsLoggingInternalToThisClassObjectFlag", 1),
+                                                            ("MainThread_TimeToSleepEachLoop", 0.002)])
+
+    if USE_PhidgetsInterfaceKit004RelayBoard1014_FLAG == 1 and EXIT_PROGRAM_FLAG == 0:
+        try:
+            PhidgetsInterfaceKit004RelayBoard1014_Object = PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(PhidgetsInterfaceKit004RelayBoard1014_SetupDict)
+            PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG = PhidgetsInterfaceKit004RelayBoard1014_Object.OBJECT_CREATED_SUCCESSFULLY_FLAG
+
+        except:
+            exceptions = sys.exc_info()[0]
+            print("PhidgetsInterfaceKit004RelayBoard1014_Object __init__: Exceptions: %s" % exceptions, 0)
+            traceback.print_exc()
+    #################################################
+    #################################################
+
+    #################################################
+    #################################################
+    if USE_PhidgetsInterfaceKit004RelayBoard1014_FLAG == 1:
+        if EXIT_PROGRAM_FLAG == 0:
+            if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG != 1:
+                print("Failed to open PhidgetsInterfaceKit004RelayBoard1014_Object.")
+                ExitProgram_Callback()
+    #################################################
+    #################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    #################################################
+    #################################################
+    global MyPrint_GUIparametersDict
+    MyPrint_GUIparametersDict = dict([("USE_GUI_FLAG", USE_GUI_FLAG and SHOW_IN_GUI_MyPrint_FLAG),
+                                        ("UseBorderAroundThisGuiObjectFlag", 0),
+                                        ("GUI_ROW", GUI_ROW_MyPrint),
+                                        ("GUI_COLUMN", GUI_COLUMN_MyPrint),
+                                        ("GUI_PADX", GUI_PADX_MyPrint),
+                                        ("GUI_PADY", GUI_PADY_MyPrint),
+                                        ("GUI_ROWSPAN", GUI_ROWSPAN_MyPrint),
+                                        ("GUI_COLUMNSPAN", GUI_COLUMNSPAN_MyPrint)])
+
+    global MyPrint_SetupDict
+    MyPrint_SetupDict = dict([("NumberOfPrintLines", 10),
+                            ("WidthOfPrintingLabel", 200),
+                            ("PrintToConsoleFlag", 1),
+                            ("LogFileNameFullPath", os.path.join(os.getcwd(), "TestLog.txt")),
+                            ("GUIparametersDict", MyPrint_GUIparametersDict)])
+
+    if USE_MyPrint_FLAG == 1 and EXIT_PROGRAM_FLAG == 0:
+        try:
+            MyPrint_Object = MyPrint_ReubenPython2and3Class(MyPrint_SetupDict)
+            MyPrint_OPEN_FLAG = MyPrint_Object.OBJECT_CREATED_SUCCESSFULLY_FLAG
+
+        except:
+            exceptions = sys.exc_info()[0]
+            print("MyPrint_Object __init__: Exceptions: %s" % exceptions)
+            traceback.print_exc()
+    #################################################
+    #################################################
+
+    #################################################
+    #################################################
+    if USE_MyPrint_FLAG == 1:
+        if EXIT_PROGRAM_FLAG == 0:
+            if MyPrint_OPEN_FLAG != 1:
+                print("Failed to open MyPrint_Object.")
+                ExitProgram_Callback()
+    #################################################
+    #################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    if USE_KEYBOARD_FLAG == 1 and EXIT_PROGRAM_FLAG == 0:
+        keyboard.on_press_key("esc", ExitProgram_Callback)
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ########################################################################################################## KEY GUI LINE
+    ##########################################################################################################
+    ##########################################################################################################
+    if USE_GUI_FLAG == 1 and EXIT_PROGRAM_FLAG == 0:
         print("Starting GUI thread...")
-        GUI_Thread_ThreadingObject = threading.Thread(target=GUI_Thread)
-        GUI_Thread_ThreadingObject.setDaemon(True) #Should mean that the GUI thread is destroyed automatically when the main thread is destroyed.
+        GUI_Thread_ThreadingObject = threading.Thread(target=GUI_Thread, daemon=True) #Daemon=True means that the GUI thread is destroyed automatically when the main thread is destroyed
         GUI_Thread_ThreadingObject.start()
-        time.sleep(0.5)  #Allow enough time for 'root' to be created that we can then pass it into other classes.
     else:
         root = None
         Tab_MainControls = None
-        Tab_RELAYS = None
+        Tab_PhidgetsInterfaceKit004RelayBoard1014 = None
         Tab_MyPrint = None
-    #################################################
-    #################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
 
-    #################################################
-    #################################################
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict
-    PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict = dict([("USE_GUI_FLAG", USE_GUI_FLAG and SHOW_IN_GUI_RELAYS_FLAG),
-                                    ("root", Tab_RELAYS),
-                                    ("EnableInternal_MyPrint_Flag", 1),
-                                    ("NumberOfPrintLines", 10),
-                                    ("UseBorderAroundThisGuiObjectFlag", 0),
-                                    ("GUI_ROW", GUI_ROW_RELAYS),
-                                    ("GUI_COLUMN", GUI_COLUMN_RELAYS),
-                                    ("GUI_PADX", GUI_PADX_RELAYS),
-                                    ("GUI_PADY", GUI_PADY_RELAYS),
-                                    ("GUI_ROWSPAN", GUI_ROWSPAN_RELAYS),
-                                    ("GUI_COLUMNSPAN", GUI_COLUMNSPAN_RELAYS)])
-
-    global PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_setup_dict
-    PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_setup_dict = dict([("GUIparametersDict", PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_GUIparametersDict),
-                                                                                ("DesiredSerialNumber", -1), #-1 MEANS ANY SN, CHANGE THIS TO MATCH YOUR UNIQUE SERIAL NUMBER
-                                                                                ("WaitForAttached_TimeoutDuration_Milliseconds", 5000),
-                                                                                ("NameToDisplay_UserSet", "Reuben's Test Relay 004 Controller"),
-                                                                                ("UsePhidgetsLoggingInternalToThisClassObjectFlag", 1),
-                                                                                ("MainThread_TimeToSleepEachLoop", 0.002)])
-
-    if USE_RELAYS_FLAG == 1:
-        try:
-            PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject = PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class(PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject_setup_dict)
-            RELAYS_OPEN_FLAG = PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.OBJECT_CREATED_SUCCESSFULLY_FLAG
-
-        except:
-            exceptions = sys.exc_info()[0]
-            print("PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject __init__: Exceptions: %s" % exceptions, 0)
-            traceback.print_exc()
-    #################################################
-    #################################################
-
-    #################################################
-    #################################################
-    if USE_MYPRINT_FLAG == 1:
-
-        MyPrint_ReubenPython2and3ClassObject_GUIparametersDict = dict([("USE_GUI_FLAG", USE_GUI_FLAG and SHOW_IN_GUI_MYPRINT_FLAG),
-                                                                        ("root", Tab_MyPrint),
-                                                                        ("UseBorderAroundThisGuiObjectFlag", 0),
-                                                                        ("GUI_ROW", GUI_ROW_MYPRINT),
-                                                                        ("GUI_COLUMN", GUI_COLUMN_MYPRINT),
-                                                                        ("GUI_PADX", GUI_PADX_MYPRINT),
-                                                                        ("GUI_PADY", GUI_PADY_MYPRINT),
-                                                                        ("GUI_ROWSPAN", GUI_ROWSPAN_MYPRINT),
-                                                                        ("GUI_COLUMNSPAN", GUI_COLUMNSPAN_MYPRINT)])
-
-        MyPrint_ReubenPython2and3ClassObject_setup_dict = dict([("NumberOfPrintLines", 10),
-                                                                ("WidthOfPrintingLabel", 200),
-                                                                ("PrintToConsoleFlag", 1),
-                                                                ("LogFileNameFullPath", os.getcwd() + "//TestLog.txt"),
-                                                                ("GUIparametersDict", MyPrint_ReubenPython2and3ClassObject_GUIparametersDict)])
-
-        try:
-            MyPrint_ReubenPython2and3ClassObject = MyPrint_ReubenPython2and3Class(MyPrint_ReubenPython2and3ClassObject_setup_dict)
-            MYPRINT_OPEN_FLAG = MyPrint_ReubenPython2and3ClassObject.OBJECT_CREATED_SUCCESSFULLY_FLAG
-
-        except:
-            exceptions = sys.exc_info()[0]
-            print("MyPrint_ReubenPython2and3ClassObject __init__: Exceptions: %s" % exceptions)
-            traceback.print_exc()
-    #################################################
-    #################################################
-
-    #################################################
-    #################################################
-    if USE_RELAYS_FLAG == 1 and RELAYS_OPEN_FLAG != 1:
-        print("Failed to open PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class.")
-        ExitProgram_Callback()
-    #################################################
-    #################################################
-
-    #################################################
-    #################################################
-    if USE_MYPRINT_FLAG == 1 and MYPRINT_OPEN_FLAG != 1:
-        print("Failed to open MyPrint_ReubenPython2and3ClassObject.")
-        ExitProgram_Callback()
-    #################################################
-    #################################################
-
-    #################################################
-    #################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
     print("Starting main loop 'test_program_for_PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class.")
     StartingTime_MainLoopThread = getPreciseSecondsTimeStampString()
 
     while(EXIT_PROGRAM_FLAG == 0):
 
         ###################################################
+        ###################################################
         CurrentTime_MainLoopThread = getPreciseSecondsTimeStampString() - StartingTime_MainLoopThread
         ###################################################
+        ###################################################
+
+        ################################################### GET's
+        ###################################################
+        if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG == 1:
+
+            PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict = PhidgetsInterfaceKit004RelayBoard1014_Object.GetMostRecentDataDict()
+
+            if "Time" in PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict:
+                PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_State = PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict["DigitalOutputsList_State"]
+                PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict["DigitalOutputsList_ErrorCallbackFiredFlag"]
+                PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_Time = PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict["Time"]
+
+                #print("PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_State: " + str(PhidgetsInterfaceKit004RelayBoard1014_MostRecentDict_DigitalOutputsList_State))
 
         ###################################################
-        if RELAYS_OPEN_FLAG == 1:
+        ###################################################
 
-            ##################### SET's
+        ################################################### SET's
+        ###################################################
+        if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG == 1:
+
             if USE_CycleThroughRelayStatesForTesting_FLAG == 1:
+
                 if CurrentTime_MainLoopThread - CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread >= CycleThroughRelayStatesForTesting_TimeBetweenStateFlips:
-                    PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.SetRelayState(CycleThroughRelayStatesForTesting_StateFlipCounter, CycleThroughRelayStatesForTesting_RelayStateToBeSet)
+
+                    PhidgetsInterfaceKit004RelayBoard1014_Object.SetRelayState(CycleThroughRelayStatesForTesting_StateFlipCounter, CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet)
                     CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread = CurrentTime_MainLoopThread
-                    print("CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread: " + str(CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread))
+                    #print("CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread: " + str(CycleThroughRelayStatesForTesting_LastTimeOfStateFlip_MainLoopThread))
 
                     if CycleThroughRelayStatesForTesting_StateFlipCounter < 3:
                         CycleThroughRelayStatesForTesting_StateFlipCounter = CycleThroughRelayStatesForTesting_StateFlipCounter + 1
                     else:
                         CycleThroughRelayStatesForTesting_StateFlipCounter = 0
-                        if CycleThroughRelayStatesForTesting_RelayStateToBeSet == 0:
-                            CycleThroughRelayStatesForTesting_RelayStateToBeSet = 1
+
+                        if CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet == 0:
+                            CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet = 1
+
                         else:
-                            CycleThroughRelayStatesForTesting_RelayStateToBeSet = 0
+                            CycleThroughRelayStatesForTesting_PhidgetsInterfaceKit004RelayBoard1014tateToBeSet = 0
 
-            #####################
-
-            ##################### GET's
-            RELAYS_MostRecentDict = PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.GetMostRecentDataDict()
-
-            if "Time" in RELAYS_MostRecentDict:
-                RELAYS_MostRecentDict_DigitalOutputsList_State = RELAYS_MostRecentDict["DigitalOutputsList_State"]
-                RELAYS_MostRecentDict_DigitalOutputsList_ErrorCallbackFiredFlag = RELAYS_MostRecentDict["DigitalOutputsList_ErrorCallbackFiredFlag"]
-                RELAYS_MostRecentDict_Time = RELAYS_MostRecentDict["Time"]
-
-                #print("RELAYS_MostRecentDict_DigitalOutputsList_State: " + str(RELAYS_MostRecentDict_DigitalOutputsList_State))
-            #####################
-
+        ###################################################
         ###################################################
 
         time.sleep(0.002)
-    #################################################
-    #################################################
 
-    ################################################# THIS IS THE EXIT ROUTINE!
-    #################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ########################################################################################################## THIS IS THE EXIT ROUTINE!
+    ##########################################################################################################
+    ##########################################################################################################
     print("Exiting main program 'test_program_for_PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class.")
 
     #################################################
-    if RELAYS_OPEN_FLAG == 1:
-        PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3ClassObject.ExitProgram_Callback()
+    if PhidgetsInterfaceKit004RelayBoard1014_OPEN_FLAG == 1:
+        PhidgetsInterfaceKit004RelayBoard1014_Object.ExitProgram_Callback()
     #################################################
 
     #################################################
-    if MYPRINT_OPEN_FLAG == 1:
-        MyPrint_ReubenPython2and3ClassObject.ExitProgram_Callback()
+    if MyPrint_OPEN_FLAG == 1:
+        MyPrint_Object.ExitProgram_Callback()
     #################################################
 
-    #################################################
-    #################################################
+    ##########################################################################################################
+    ##########################################################################################################
+    ##########################################################################################################
 
+##########################################################################################################
+##########################################################################################################
 ##########################################################################################################
 ##########################################################################################################
