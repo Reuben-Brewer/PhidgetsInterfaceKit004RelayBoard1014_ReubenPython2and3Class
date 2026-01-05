@@ -1,11 +1,10 @@
-########################  
+########################
 
 PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class
 
 Wrapper (including ability to hook to Tkinter GUI) to control Phidgets four-relay controller 1014 (non VINT).
 
 From Phidgets' website:
-
 "The 1014 has 4 Relay Outputs for switching AC or DC power; the relays are Single Pole Double Throw (SPDT). The PhidgetInterfaceKit 0/0/4 allows you to control high power devices such as incandescent light bulbs, fans, and pumps by electronically switching power on and off."
 
 PhidgetInterfaceKit 0/0/4
@@ -22,15 +21,15 @@ www.reubotics.com
 
 Apache 2 License
 
-Software Revision G, 09/21/2022
+Software Revision H, 01/02/2026
 
-Verified working on: 
+Verified working on:
 
-Python 2.7, 3.8.
+Python 3.12/13.
 
-Windows 8.1, 10 64-bit
+Windows 10/11 64-bit
 
-Raspberry Pi Buster 
+Raspberry Pi Bookworm
 
 (no Mac testing yet)
 
@@ -40,13 +39,13 @@ Raspberry Pi Buster
 
 ########################### Python module installation instructions, all OS's
 
-PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies: ['future.builtins', 'Phidget22']
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies: ['future.builtins', 'Phidget22', 'ReubenGithubCodeModulePaths']
 
-PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_TestProgram: ['MyPrint_ReubenPython2and3Class']
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_TestProgram: ['keyboard', 'MyPrint_ReubenPython2and3Class', 'ReubenGithubCodeModulePaths']
 
-PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_NestedLayers: ['future.builtins']
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_NestedLayers: []
 
-PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_All: ['future.builtins', 'MyPrint_ReubenPython2and3Class', 'Phidget22']
+PhidgetsInterfaceKit004RelayBoard1014_ReubenPython2and3Class, ListOfModuleDependencies_All:['future.builtins', 'keyboard', 'MyPrint_ReubenPython2and3Class', 'Phidget22', 'ReubenGithubCodeModulePaths']
 
 https://pypi.org/project/Phidget22/#files
 
